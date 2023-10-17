@@ -4,7 +4,16 @@ const project = new awscdk.AwsCdkTypeScriptApp({
   defaultReleaseBranch: 'main',
   name: 'cdk-athena-federated',
   projenrcTs: true,
-
+  deps: [
+    '@aws-cdk/aws-glue-alpha',
+    '@thundra/cdk-rds-initializer',
+  ],
+  devDeps: [    
+    '@aws-sdk/client-dynamodb',
+    '@aws-sdk/util-dynamodb',
+    '@faker-js/faker',
+    'ioredis',    
+  ],
   // deps: [],                /* Runtime dependencies of this module. */
   // description: undefined,  /* The description is just a string that helps people understand the purpose of the package. */
   // devDeps: [],             /* Build dependencies for this module. */

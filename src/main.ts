@@ -1,13 +1,9 @@
-import { App, Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import { App } from 'aws-cdk-lib';
+import { DataStack } from './stacks/data-stack';
+import { VpcFlowLogsStack } from './stacks/vpc-stack';
+import { LoaderStack } from './stacks/loader-stack';
+import { RdsGenericStack } from './stacks/rds-stack';
 
-export class MyStack extends Stack {
-  constructor(scope: Construct, id: string, props: StackProps = {}) {
-    super(scope, id, props);
-
-    // define resources here...
-  }
-}
 
 // for development, use account/region from cdk cli
 const devEnv = {
@@ -17,7 +13,26 @@ const devEnv = {
 
 const app = new App();
 
-new MyStack(app, 'cdk-athena-federated-dev', { env: devEnv });
-// new MyStack(app, 'cdk-athena-federated-prod', { env: prodEnv });
+const vpcStack = new VpcFlowLogsStack(app, 'cdk-vpc-stack', {
+  env: devEnv,
+});
 
+const dataStack = new DataStack(app, 'cdk-redis-stack', {
+  env: devEnv,
+  vpc: vpcStack.vpc,
+});
+
+new RdsGenericStack(app, 'cdk-rds-stack', {
+  env: devEnv,
+  vpc: vpcStack.vpc,
+  table: 'customer',
+});
+
+new LoaderStack(app, 'cdk-loader', {
+  env: devEnv,
+  dynamoDbTable: dataStack.table,
+  redisHost: dataStack.primaryEndpoint.address,
+  vpc: vpcStack.vpc,
+  securityGroup: dataStack.securityGroup,
+})
 app.synth();
